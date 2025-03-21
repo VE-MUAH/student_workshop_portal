@@ -119,49 +119,48 @@ if admin_access:
     admin_password = st.sidebar.text_input("Enter Admin Password", type="password")
 
     if admin_password == "VICENTIAemuah@2002":  
-        st.sidebar.success("✅ Access Granted")
+    st.sidebar.success("✅ Access Granted")
 
-        # Fetch data once and use it for both display and deletion
-        conn = sqlite3.connect("data/workshop.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, name FROM students")
-        data = cursor.fetchall()
-        conn.close()
+    # Fetch data once at the beginning
+    conn = sqlite3.connect("data/workshop.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name FROM students")
+    data = cursor.fetchall()
 
-        if data:
-            student_ids = [f"{row[0]} - {row[1]}" for row in data]
-            
-            if st.sidebar.button("View Registrations"):
-                conn = sqlite3.connect("data/workshop.db")
-                cursor = conn.cursor()
-                cursor.execute("SELECT name, email, phone, institution, course, workshop, referrer FROM students")
-                data_full = cursor.fetchall()
-                conn.close()
+    cursor.execute("SELECT name, email, phone, institution, course, workshop, referrer FROM students")
+    data_full = cursor.fetchall()
+    conn.close()
 
-                if data_full:
-                    df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
-                    st.dataframe(df)
-                    
-                    df_counts = df["Workshop"].value_counts().reset_index()
-                    df_counts.columns = ["workshop", "count"]
-                    
-                    if not df_counts.empty:
-                        fig, ax = plt.subplots(figsize=(6, 4))  
-                        ax.bar(df_counts["workshop"], df_counts["count"], color=['blue', 'green', 'orange'])
-                        ax.set_xlabel("Workshop")
-                        ax.set_ylabel("Number of Registrations")
-                        ax.set_title("Workshop Registrations")
-                        st.pyplot(fig, clear_figure=True)
-                        plt.close(fig)
-                    else:
-                        st.warning("No registrations yet.")
-                
-            if st.button("📥 Export Data to CSV"):
+    if data:
+        student_ids = [f"{row[0]} - {row[1]}" for row in data]
+
+        if st.sidebar.button("View Registrations"):
+            if data_full:
                 df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
                 st.dataframe(df)
-                df.to_csv("data/registered_students.csv", index=False)
-                st.success("✅ Data exported successfully!")
-            
+
+                df_counts = df["Workshop"].value_counts().reset_index()
+                df_counts.columns = ["workshop", "count"]
+
+                if not df_counts.empty:
+                    fig, ax = plt.subplots(figsize=(6, 4))  
+                    ax.bar(df_counts["workshop"], df_counts["count"], color=['blue', 'green', 'orange'])
+                    ax.set_xlabel("Workshop")
+                    ax.set_ylabel("Number of Registrations")
+                    ax.set_title("Workshop Registrations")
+                    st.pyplot(fig, clear_figure=True)
+                    plt.close(fig)
+                else:
+                    st.warning("No registrations yet.")
+
+        # ✅ Move this outside the button check so it always has data_full available
+        if st.button("📥 Export Data to CSV"):
+            df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
+            df.to_csv("data/registered_students.csv", index=False)
+            st.success("✅ Data exported successfully!")
+
+
+
             st.subheader("❌ Delete a Student")
             selected_student = st.selectbox("Select Student to Remove", student_ids)
             if st.button("Delete"):
@@ -174,5 +173,64 @@ if admin_access:
                 st.success("✅ Student deleted!")
               
                 st.rerun()
+
+
+
+    # if admin_password == "VICENTIAemuah@2002":  
+    #     st.sidebar.success("✅ Access Granted")
+
+    #     # Fetch data once and use it for both display and deletion
+    #     conn = sqlite3.connect("data/workshop.db")
+    #     cursor = conn.cursor()
+    #     cursor.execute("SELECT id, name FROM students")
+    #     data = cursor.fetchall()
+    #     conn.close()
+
+    #     if data:
+    #         student_ids = [f"{row[0]} - {row[1]}" for row in data]
+            
+    #         if st.sidebar.button("View Registrations"):
+    #             conn = sqlite3.connect("data/workshop.db")
+    #             cursor = conn.cursor()
+    #             cursor.execute("SELECT name, email, phone, institution, course, workshop, referrer FROM students")
+    #             data_full = cursor.fetchall()
+    #             conn.close()
+
+    #             if data_full:
+    #                 df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
+    #                 st.dataframe(df)
+                    
+    #                 df_counts = df["Workshop"].value_counts().reset_index()
+    #                 df_counts.columns = ["workshop", "count"]
+                    
+    #                 if not df_counts.empty:
+    #                     fig, ax = plt.subplots(figsize=(6, 4))  
+    #                     ax.bar(df_counts["workshop"], df_counts["count"], color=['blue', 'green', 'orange'])
+    #                     ax.set_xlabel("Workshop")
+    #                     ax.set_ylabel("Number of Registrations")
+    #                     ax.set_title("Workshop Registrations")
+    #                     st.pyplot(fig, clear_figure=True)
+    #                     plt.close(fig)
+    #                 else:
+    #                     st.warning("No registrations yet.")
+                
+    #         if st.button("📥 Export Data to CSV"):
+    #             df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
+    #             st.dataframe(df)
+    #             df.to_csv("data/registered_students.csv", index=False)
+    #             st.success("✅ Data exported successfully!")
+            
+            # st.subheader("❌ Delete a Student")
+            # selected_student = st.selectbox("Select Student to Remove", student_ids)
+            # if st.button("Delete"):
+            #     student_id = selected_student.split(" - ")[0]
+            #     conn = sqlite3.connect("data/workshop.db")
+            #     cursor = conn.cursor()
+            #     cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
+            #     conn.commit()
+            #     conn.close()
+            #     st.success("✅ Student deleted!")
+              
+            #     st.rerun()
 
 
