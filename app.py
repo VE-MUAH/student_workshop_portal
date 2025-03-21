@@ -83,7 +83,7 @@ def send_email(name, email, workshop):
         server.quit()
     except Exception as e:
         st.write('sent')
-        # st.warning("⚠️ Could not send email.")
+        # st.warning("⚠️ Could not send email")
 
 # ---------------------- Streamlit UI ---------------------- #
 st.title("🎓 Workshop Registration Portal")
@@ -95,7 +95,7 @@ with st.form("registration_form"):
     phone = st.text_input("Phone Number")
     institution = st.text_input("Institution")
     course = st.text_input("Course")
-    workshop = st.selectbox("Select a Workshop", ["","Python Basics", "Data Science", "Machine Learning","Mobile app development","Front end development","java programming","c++ programming","data analysis","data visualisation","Artificail intelligence"])
+    workshop = st.selectbox("Select a Workshop", ["","Cloud computing","Artificial Intelligence","Python Basics", "Data Science", "Machine Learning","Data Analysis","Data Visualisation", "Web Development", "Django for backend"])
     referrer = st.text_input("Referral Code (Optional)")
     submit_button = st.form_submit_button("Register for Workshop")
 
