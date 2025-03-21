@@ -109,7 +109,8 @@ if admin_access:
 
                     if not df_counts.empty:
                         fig, ax = plt.subplots(figsize=(6, 4))  
-                        ax.bar(df_counts["Workshop"], df_counts["Count"], color=['blue', 'green', 'orange'])
+                        ax.bar(df_counts["Workshop"], df_counts["Count"],colors = ['blue', 'green', 'orange', 'black', 'yellow', 'violet', 'indigo', 'red', 'cyan']
+)
                         ax.set_xlabel("Workshop")
                         ax.set_ylabel("Number of Registrations")
                         ax.set_title("Workshop Registrations")
