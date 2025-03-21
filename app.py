@@ -156,6 +156,8 @@ if admin_access:
                         st.warning("No registrations yet.")
                 
             if st.button("📥 Export Data to CSV"):
+                df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
+                st.dataframe(df)
                 df.to_csv("data/registered_students.csv", index=False)
                 st.success("✅ Data exported successfully!")
             
