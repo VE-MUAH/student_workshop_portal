@@ -26,14 +26,6 @@ def connect_db():
                         referrer TEXT DEFAULT NULL
                     )''')
 
-    # Check if "referrer" column exists, if not, add it
-    cursor.execute("PRAGMA table_info(students)")
-    columns = [column[1] for column in cursor.fetchall()]
-    
-    if "referrer" not in columns:
-        cursor.execute("ALTER TABLE students ADD COLUMN referrer TEXT DEFAULT NULL")
-        conn.commit()
-    
     conn.close()
 
 connect_db()  # Ensure database is set up correctly
@@ -60,34 +52,8 @@ def generate_qr(data):
     buf.seek(0)
     return buf
 
-def send_email(name, email, workshop):
-    """Sends a confirmation email (dummy function)."""
-    sender_email = "your_email@gmail.com"
-    sender_password = "your_password"
-    receiver_email = email
-
-    subject = "Workshop Registration Confirmation"
-    body = f"Hello {name},\n\nYou have successfully registered for the {workshop} workshop.\n\nBest Regards,\nWorkshop Team"
-
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, receiver_email, msg.as_string())
-        server.quit()
-    except Exception as e:
-        st.write('sent')
-        # st.warning("⚠️ Could not send email")
-
 # ---------------------- Streamlit UI ---------------------- #
 st.title("🎓 Workshop Registration Portal")
-st.subheader("Register and receive a confirmation email with a QR Code!")
 
 with st.form("registration_form"):
     name = st.text_input("Full Name")
@@ -102,7 +68,6 @@ with st.form("registration_form"):
 if submit_button:
     if name and email and phone and institution and course and workshop:
         if add_student(name, email, phone, institution, course, workshop, referrer):
-            send_email(name, email, workshop)
             qr_buf = generate_qr(f"{name} - {workshop}")
             st.success(f"✅ Registration successful for {name}!")
             st.image(qr_buf, caption="Scan this QR for your registration details")
@@ -140,16 +105,31 @@ if admin_access:
                     st.dataframe(df)
 
                     df_counts = df["Workshop"].value_counts().reset_index()
-                    df_counts.columns = ["workshop", "count"]
+                    df_counts.columns = ["Workshop", "Count"]
 
                     if not df_counts.empty:
                         fig, ax = plt.subplots(figsize=(6, 4))  
-                        ax.bar(df_counts["workshop"], df_counts["count"], color=['blue', 'green', 'orange'])
+                        ax.bar(df_counts["Workshop"], df_counts["Count"], color=['blue', 'green', 'orange'])
                         ax.set_xlabel("Workshop")
                         ax.set_ylabel("Number of Registrations")
                         ax.set_title("Workshop Registrations")
+                        plt.xticks(rotation=45, ha="right")
+
+                        # Save the figure to a buffer
+                        img_buf = io.BytesIO()
+                        plt.savefig(img_buf, format="png", bbox_inches="tight")
+                        img_buf.seek(0)
+
                         st.pyplot(fig, clear_figure=True)
                         plt.close(fig)
+
+                        # Add download button for the graph
+                        st.download_button(
+                            label="📊 Download Registration Chart",
+                            data=img_buf,
+                            file_name="workshop_registrations.png",
+                            mime="image/png"
+                        )
                     else:
                         st.warning("No registrations yet.")
 
@@ -347,9 +327,23 @@ if admin_access:
 #                     else:
 #                         st.warning("No registrations yet.")
 
+#             # Export data and provide a download button
 #             if st.button("📥 Export Data to CSV"):
 #                 df = pd.DataFrame(data_full, columns=["Name", "Email", "Phone", "Institution", "Course", "Workshop", "Referrer"])
-#                 df.to_csv("data/registered_students.csv", index=False)
+
+#                 # Save CSV to a BytesIO buffer instead of disk
+#                 csv_buffer = io.BytesIO()
+#                 df.to_csv(csv_buffer, index=False)
+#                 csv_buffer.seek(0)
+
+#                 # Provide a download button
+#                 st.download_button(
+#                     label="📂 Download CSV",
+#                     data=csv_buffer,
+#                     file_name="registered_students.csv",
+#                     mime="text/csv"
+#                 )
+
 #                 st.success("✅ Data exported successfully!")
 
 #             st.subheader("❌ Delete a Student")
@@ -363,6 +357,7 @@ if admin_access:
 #                 conn.close()
 #                 st.success("✅ Student deleted!")
 #                 st.rerun()
+
 
 
 
